@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLE Attendance System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Classroom Attendance System</h1>
+        
+        <div class="role-selector">
+            <button id="teacherBtn" class="role-btn active">Teacher Mode</button>
+            <button id="studentBtn" class="role-btn">Student Mode</button>
+        </div>
+
+        <!-- Teacher Interface -->
+        <div id="teacherInterface" class="interface active">
+            <h2>Teacher: Take Attendance</h2>
+            <div class="controls">
+                <button id="startScan" class="btn-primary">Start Scanning</button>
+                <button id="stopScan" class="btn-secondary" disabled>Stop Scanning</button>
+                <button id="clearList" class="btn-secondary">Clear List</button>
+            </div>
+            <div id="status" class="status">Ready to scan for student devices</div>
+            <div class="attendance-list">
+                <h3>Detected Students</h3>
+                <table id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Roll Number</th>
+                            <th>Device Name</th>
+                            <th>Time Detected</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceBody">
+                        <!-- Attendance records will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Student Interface -->
+        <div id="studentInterface" class="interface">
+            <h2>Student: Advertise Roll Number</h2>
+            <div class="form-group">
+                <label for="rollNumber">Enter Your Roll Number:</label>
+                <input type="text" id="rollNumber" placeholder="e.g., CS2020001" required>
+            </div>
+            <div class="controls">
+                <button id="startAdvertise" class="btn-primary">Start Advertising</button>
+                <button id="stopAdvertise" class="btn-secondary" disabled>Stop Advertising</button>
+            </div>
+            <div id="studentStatus" class="status">Enter your roll number to start advertising</div>
+            <div class="note">
+                <p><strong>Note:</strong> This web-based solution has limitations. For best results, use Chrome/Edge on Android or Chrome on macOS.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
