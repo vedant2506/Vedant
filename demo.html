@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Processing Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .demo-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .demo-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .demo-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .demo-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .success-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .success-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .failure-btn {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .failure-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .processing-btn {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .processing-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .location-btn {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .location-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .attendance-display {
+            margin: 30px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .processing-animation {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .processing-text {
+            font-size: 1.2rem;
+            color: #666;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .result-animation {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        .success-icon {
+            color: #4CAF50;
+        }
+
+        .failure-icon {
+            color: #f44336;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            animation: slideUp 0.5s ease-out 0.2s both;
+        }
+
+        .success-text {
+            color: #4CAF50;
+        }
+
+        .failure-text {
+            color: #f44336;
+        }
+
+        @keyframes slideUp {
+            0% {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .result-details {
+            font-size: 1rem;
+            color: #666;
+            animation: slideUp 0.5s ease-out 0.4s both;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2196F3, #21CBF3);
+            border-radius: 3px;
+            animation: progressFill 2s ease-in-out;
+        }
+
+        @keyframes progressFill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .attendance-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 0.95rem;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        .reset-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .demo-description {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .demo-description h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .demo-description p {
+            color: #555;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">
+            <i class="fas fa-chalkboard-teacher"></i>
+            Attendance Demo
+        </h1>
+        <p class="demo-subtitle">Interactive Attendance Processing Animation</p>
+
+        <div class="demo-description">
+            <h3><i class="fas fa-info-circle"></i> Demo Instructions</h3>
+            <p>Click the buttons below to simulate different attendance scenarios. Watch the animations show processing, success, or failure states.</p>
+            <p><strong>Location-Based Attendance:</strong> The orange button will request your location permission and check if you're within 500m of the college. Try it to see how location-based attendance works!</p>
+        </div>
+
+        <div class="demo-controls">
+            <button class="demo-btn processing-btn" onclick="simulateProcessing()">
+                <i class="fas fa-cog"></i>
+                Simulate Processing
+            </button>
+            <button class="demo-btn success-btn" onclick="simulateSuccess()">
+                <i class="fas fa-check"></i>
+                Mark Success
+            </button>
+            <button class="demo-btn failure-btn" onclick="simulateFailure()">
+                <i class="fas fa-times"></i>
+                Mark Failed
+            </button>
+            <button class="demo-btn location-btn" onclick="simulateLocationAttendance()">
+                <i class="fas fa-map-marker-alt"></i>
+                Location-Based Attendance
+            </button>
+        </div>
+
+        <div class="attendance-display" id="attendanceDisplay">
+            <div class="processing-animation" id="processingAnimation">
+                <div class="spinner"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="processing-text">Processing attendance...</div>
+            </div>
+
+            <div class="result-animation" id="resultAnimation">
+                <div class="result-icon" id="resultIcon"></div>
+                <div class="result-text" id="resultText"></div>
+                <div class="result-details" id="resultDetails"></div>
+                <div class="attendance-info" id="attendanceInfo" style="display: none;">
+                    <div class="info-row">
+                        <span class="info-label">Student ID:</span>
+                        <span class="info-value" id="studentId">STU001</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Time:</span>
+                        <span class="info-value" id="attendanceTime">10:30 AM</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Date:</span>
+                        <span class="info-value" id="attendanceDate">Dec 15, 2024</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value" id="attendanceStatus">Present</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="reset-btn" onclick="resetDemo()">
+            <i class="fas fa-refresh"></i>
+            Reset Demo
+        </button>
+    </div>
+
+    <script>
+        let isProcessing = false;
+
+        function resetDemo() {
+            document.getElementById('processingAnimation').style.display = 'none';
+            document.getElementById('resultAnimation').style.display = 'none';
+            document.getElementById('attendanceInfo').style.display = 'none';
+            isProcessing = false;
+        }
+
+        function simulateProcessing() {
+            if (isProcessing) return;
+            
+            isProcessing = true;
+            resetDemo();
+            
+            document.getElementById('processingAnimation').style.display = 'flex';
+            
+            // Simulate processing time
+            setTimeout(() => {
+                // Randomly choose success or failure after processing
+                const random = Math.random();
+                if (random > 0.3) {
+                    simulateSuccess();
+                } else {
+                    simulateFailure();
+                }
+            }, 3000);
+        }
+
+        function simulateSuccess() {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            const attendanceInfo = document.getElementById('attendanceInfo');
+            
+            resultIcon.className = 'result-icon success-icon fas fa-check-circle';
+            resultText.className = 'result-text success-text';
+            resultText.textContent = 'Attendance Marked Successfully!';
+            resultDetails.textContent = 'Your attendance has been recorded in the system.';
+            
+            // Update attendance info
+            document.getElementById('studentId').textContent = 'STU' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            document.getElementById('attendanceTime').textContent = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            document.getElementById('attendanceDate').textContent = new Date().toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            document.getElementById('attendanceStatus').textContent = 'Present';
+            
+            resultAnimation.style.display = 'flex';
+            attendanceInfo.style.display = 'block';
+            
+            isProcessing = false;
+        }
+
+        function simulateFailure() {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            resultIcon.className = 'result-icon failure-icon fas fa-times-circle';
+            resultText.className = 'result-text failure-text';
+            resultText.textContent = 'Attendance Marking Failed!';
+            resultDetails.textContent = 'Unable to process attendance. Please try again or contact support.';
+            
+            resultAnimation.style.display = 'flex';
+            
+            isProcessing = false;
+        }
+
+        // Location-based attendance simulation
+        function simulateLocationAttendance() {
+            if (isProcessing) return;
+            
+            isProcessing = true;
+            resetDemo();
+            
+            // Show processing animation
+            document.getElementById('processingAnimation').style.display = 'flex';
+            document.querySelector('.processing-text').textContent = 'Checking location permission...';
+            
+            // Simulate location permission request
+            setTimeout(() => {
+                checkLocationPermission();
+            }, 1500);
+        }
+
+        function checkLocationPermission() {
+            if (!navigator.geolocation) {
+                showLocationError('Geolocation is not supported by this browser.');
+                return;
+            }
+
+            // Update processing text
+            document.querySelector('.processing-text').textContent = 'Requesting location permission...';
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Permission granted, check location
+                    checkLocationDistance(position);
+                },
+                (error) => {
+                    // Permission denied or error
+                    if (error.code === error.PERMISSION_DENIED) {
+                        showLocationPermissionDenied();
+                    } else {
+                        showLocationError('Unable to get your location. Please try again.');
+                    }
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function checkLocationDistance(position) {
+            document.querySelector('.processing-text').textContent = 'Checking distance from college...';
+            
+            // Define college location (example coordinates - replace with your college's coordinates)
+            const collegeLocation = {
+                latitude: 20.010627,  // Example: Delhi coordinates
+                longitude: 73.877710
+            };
+            
+            const userLocation = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+            
+            // Calculate distance
+            const distance = calculateDistance(collegeLocation, userLocation);
+            const maxDistance = 500; // 500 meters
+            
+            setTimeout(() => {
+                if (distance <= maxDistance) {
+                    showLocationSuccess(distance);
+                } else {
+                    showLocationOutOfRange(distance);
+                }
+            }, 2000);
+        }
+
+        function calculateDistance(loc1, loc2) {
+            const R = 6371e3; // Earth's radius in meters
+            const φ1 = loc1.latitude * Math.PI/180;
+            const φ2 = loc2.latitude * Math.PI/180;
+            const Δφ = (loc2.latitude-loc1.latitude) * Math.PI/180;
+            const Δλ = (loc2.longitude-loc1.longitude) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                    Math.cos(φ1) * Math.cos(φ2) *
+                    Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            return R * c; // Distance in meters
+        }
+
+        function showLocationSuccess(distance) {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            resultIcon.className = 'result-icon success-icon fas fa-check-circle';
+            resultText.className = 'result-text success-text';
+            resultText.textContent = 'Attendance Marked Successfully!';
+            resultDetails.textContent = `You are within college premises (${Math.round(distance)}m away). Attendance recorded.`;
+            
+            resultAnimation.style.display = 'flex';
+            isProcessing = false;
+        }
+
+        function showLocationOutOfRange(distance) {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            resultIcon.className = 'result-icon failure-icon fas fa-times-circle';
+            resultText.className = 'result-text failure-text';
+            resultText.textContent = 'Device Out of College!';
+            resultDetails.textContent = `You are ${Math.round(distance)}m away from college. Please come within 500m to mark attendance.`;
+            
+            resultAnimation.style.display = 'flex';
+            isProcessing = false;
+        }
+
+        function showLocationPermissionDenied() {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            resultIcon.className = 'result-icon failure-icon fas fa-location-slash';
+            resultText.className = 'result-text failure-text';
+            resultText.textContent = 'Location Permission Required!';
+            resultDetails.textContent = 'Without location permission, you cannot mark attendance. Please enable location access and try again.';
+            
+            resultAnimation.style.display = 'flex';
+            isProcessing = false;
+        }
+
+        function showLocationError(message) {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            resultIcon.className = 'result-icon failure-icon fas fa-exclamation-triangle';
+            resultText.className = 'result-text failure-text';
+            resultText.textContent = 'Location Error!';
+            resultDetails.textContent = message;
+            
+            resultAnimation.style.display = 'flex';
+            isProcessing = false;
+        }
+
+        // Auto-demo functionality
+        function startAutoDemo() {
+            const scenarios = [
+                () => simulateProcessing(),
+                () => simulateSuccess(),
+                () => simulateFailure()
+            ];
+            
+            let currentIndex = 0;
+            
+            function runNextScenario() {
+                if (currentIndex < scenarios.length) {
+                    scenarios[currentIndex]();
+                    currentIndex++;
+                    setTimeout(runNextScenario, 5000);
+                } else {
+                    currentIndex = 0;
+                    setTimeout(runNextScenario, 2000);
+                }
+            }
+            
+            // Start auto demo after 3 seconds
+            setTimeout(runNextScenario, 3000);
+        }
+
+        // Uncomment the line below to enable auto-demo mode
+        // startAutoDemo();
+    </script>
+</body>
+</html>
