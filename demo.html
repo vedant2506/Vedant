@@ -306,7 +306,8 @@
         <div class="demo-description">
             <h3><i class="fas fa-info-circle"></i> Demo Instructions</h3>
             <p>Click the buttons below to simulate different attendance scenarios. Watch the animations show processing, success, or failure states.</p>
-            <p><strong>Location-Based Attendance:</strong> The orange button will request your location permission and check if you're within 500m of the college. Try it to see how location-based attendance works!</p>
+            <p><strong>Location-Based Attendance:</strong> The orange button will request your location permission and simulate distance checking. For demo purposes, it will show realistic results (50-350m away).</p>
+            <p><strong>Note:</strong> For mobile testing, ensure you're using HTTPS or localhost. The demo simulates being within college range for better testing experience.</p>
         </div>
 
         <div class="demo-controls">
@@ -463,13 +464,85 @@
             
             // Simulate location permission request
             setTimeout(() => {
-                checkLocationPermission();
-            }, 1500);
+                // For demo purposes, we'll simulate different scenarios
+                const demoMode = Math.random();
+                if (demoMode < 0.7) {
+                    // 70% chance of success
+                    simulateLocationSuccess();
+                } else if (demoMode < 0.9) {
+                    // 20% chance of permission denied
+                    simulateLocationPermissionDenied();
+                } else {
+                    // 10% chance of out of range
+                    simulateLocationOutOfRange();
+                }
+            }, 2000);
+        }
+
+        function simulateLocationSuccess() {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            const distance = Math.floor(Math.random() * 300 + 50); // 50-350 meters
+            
+            resultIcon.className = 'result-icon success-icon fas fa-check-circle';
+            resultText.className = 'result-text success-text';
+            resultText.textContent = 'Attendance Marked Successfully!';
+            resultDetails.textContent = `You are within college premises (${distance}m away). Attendance recorded.`;
+            
+            resultAnimation.style.display = 'flex';
+            isProcessing = false;
+        }
+
+        function simulateLocationPermissionDenied() {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            resultIcon.className = 'result-icon failure-icon fas fa-location-slash';
+            resultText.className = 'result-text failure-text';
+            resultText.textContent = 'Location Permission Required!';
+            resultDetails.textContent = 'Without location permission, you cannot mark attendance. Please enable location access and try again.';
+            
+            resultAnimation.style.display = 'flex';
+            isProcessing = false;
+        }
+
+        function simulateLocationOutOfRange() {
+            resetDemo();
+            
+            const resultAnimation = document.getElementById('resultAnimation');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            const distance = Math.floor(Math.random() * 2000 + 600); // 600-2600 meters
+            
+            resultIcon.className = 'result-icon failure-icon fas fa-times-circle';
+            resultText.className = 'result-text failure-text';
+            resultText.textContent = 'Device Out of College!';
+            resultDetails.textContent = `You are ${distance}m away from college. Please come within 500m to mark attendance.`;
+            
+            resultAnimation.style.display = 'flex';
+            isProcessing = false;
         }
 
         function checkLocationPermission() {
             if (!navigator.geolocation) {
                 showLocationError('Geolocation is not supported by this browser.');
+                return;
+            }
+
+            // Check if running on HTTPS (required for geolocation on mobile)
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                showLocationError('Location access requires HTTPS. Please use a secure connection.');
                 return;
             }
 
@@ -483,16 +556,21 @@
                 },
                 (error) => {
                     // Permission denied or error
+                    console.log('Geolocation error:', error);
                     if (error.code === error.PERMISSION_DENIED) {
                         showLocationPermissionDenied();
+                    } else if (error.code === error.POSITION_UNAVAILABLE) {
+                        showLocationError('Location information is unavailable. Please check your GPS settings.');
+                    } else if (error.code === error.TIMEOUT) {
+                        showLocationError('Location request timed out. Please try again.');
                     } else {
-                        showLocationError('Unable to get your location. Please try again.');
+                        showLocationError('Unable to get your location. Please ensure location services are enabled.');
                     }
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
+                    timeout: 15000,
+                    maximumAge: 300000 // 5 minutes
                 }
             );
         }
@@ -500,10 +578,11 @@
         function checkLocationDistance(position) {
             document.querySelector('.processing-text').textContent = 'Checking distance from college...';
             
-            // Define college location (example coordinates - replace with your college's coordinates)
+            // For demo purposes, we'll simulate being close to college
+            // In real implementation, replace with your actual college coordinates
             const collegeLocation = {
-                latitude: 20.010627,  // Example: Delhi coordinates
-                longitude: 73.877710
+                latitude: position.coords.latitude + (Math.random() - 0.5) * 0.01, // Within ~500m
+                longitude: position.coords.longitude + (Math.random() - 0.5) * 0.01
             };
             
             const userLocation = {
@@ -515,11 +594,14 @@
             const distance = calculateDistance(collegeLocation, userLocation);
             const maxDistance = 500; // 500 meters
             
+            // For demo, let's make it more realistic
+            const simulatedDistance = Math.random() * 300 + 50; // Between 50-350 meters
+            
             setTimeout(() => {
-                if (distance <= maxDistance) {
-                    showLocationSuccess(distance);
+                if (simulatedDistance <= maxDistance) {
+                    showLocationSuccess(simulatedDistance);
                 } else {
-                    showLocationOutOfRange(distance);
+                    showLocationOutOfRange(simulatedDistance);
                 }
             }, 2000);
         }
